@@ -7,7 +7,26 @@ class Hash:
         self.end_idx = end_idx
         self.start_idx = start_idx
 
+class OrderError(Exception):
+    """Custom error for Cumsum"""
+
 class Cumsum:
+    """
+    Calculates the cumulative sum for a given numeric datetime
+    Each entry in the hash attribute is a Hash object
+    The cumulative sum can be retrieved like getting an item and
+    returns the index closest to the one entered
+    Data is expected to be ordered in increasing order
+
+    >>> data = [[1.0,20], [2.0,0], \
+            [2.1,20], [3.0,203], [3.4, 120]]
+    >>> cs = Cumsum(data)
+    >>> cs[2.1]
+    (2.1, 20)
+    >>> cs.add_data([[3.5, 102], [3.6, 12], [3.8, 120]])
+    >>> cs[3.9]
+    (3.8, 557)
+    """
     def __init__(self, data: List[List[Num]], window: Num):
         self.hash = {}
         self.data = data
@@ -16,20 +35,28 @@ class Cumsum:
 
     def bootstrap(self, data: List[List[Num]]):
         i = 0
+        last_key = ''
         if len(self.hash) == 0:
             dt, val = data[0]
             self.hash[dt] = Hash(val,0,0)
+            last_key = dt
             i += 1
         while i < len(data):
-            last_key = list(self.hash.keys())[-1]
+            if last_key == '':
+                last_key = list(self.hash.keys())[-1]
             prev_hash = self.hash[last_key]
             start_idx = prev_hash.start_idx
             dt, val = data[i]
+            if last_key > dt:
+                msg = 'Input data must be increasing in datetime\n'
+                msg += f'{last_key} must be less than {dt}'
+                raise OrderError(msg)
             cumsum = val + prev_hash.cumsum
             while dt - self.data[start_idx][0] > self.window:
                 cumsum -= self.data[start_idx][1]
                 start_idx += 1
             self.hash[dt] = Hash(cumsum, start_idx, i)
+            last_key = dt
             i += 1
         return self.hash
 
@@ -42,16 +69,3 @@ class Cumsum:
             dt = max([k for k in list(self.hash.keys()) if k < dt])
         return (dt, self.hash[dt].cumsum)
 
-
-
-# data = [[1.0,20], [2.0,0], \
-#         [2.1,20], [3.0,203], [3.4, 120]]
-# cs = CumSum(data)
-# cs.hash
-# [1.0: <object#hash cumsum: 20, start_idx: 0, end_idx: 0>,
-#  2.0: <object#hash cumsum: 0, start_idx: 1, end_idx: 1>,
-#  2.1: <object#hash cumsum: 20, start_idx: 1, end_idx: 2>,
-#  3.0: <object#hash cumsum: 223, start_idx: 2, end_idx: 3>,
-#  3.4: <object#hash cumsum: 323, start_idx: 3, end_idx: 4>]
-# cs[2.1] = 20
-# cs.add_data([[3.5, 102], [3.6, 12], [3.8, 120]])
