@@ -10,6 +10,9 @@ class Hash:
 class OrderError(Exception):
     """Custom error for Cumsum"""
 
+class TypeError(Exception):
+    """Custom error for Cumsum"""
+
 class Cumsum:
     """
     Calculates the cumulative sum for a given numeric datetime
@@ -47,6 +50,9 @@ class Cumsum:
             prev_hash = self.hash[last_key]
             start_idx = prev_hash.start_idx
             dt, val = data[i]
+            if type(dt) not in [int, float]:
+                msg = f'{dt} is not a numeric value'
+                raise TypeError(msg)
             if last_key > dt:
                 msg = 'Input data must be increasing in datetime\n'
                 msg += f'{last_key} must be less than {dt}'
@@ -68,4 +74,3 @@ class Cumsum:
         if dt not in self.hash.keys():
             dt = max([k for k in list(self.hash.keys()) if k < dt])
         return (dt, self.hash[dt].cumsum)
-
