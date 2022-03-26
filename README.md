@@ -2,6 +2,9 @@
 
 Calculates the cumulative sum for a [datetime, size] array
 
+    from dateutil import parser
+    import re
+
     with open('data/no2.csv', 'r') as f:
         rows = []
         for tr in f:
