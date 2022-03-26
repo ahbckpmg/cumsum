@@ -2,9 +2,8 @@ from typing import List, Union
 Num = Union[int, float]
 
 class Hash:
-    def __init__(self, cumsum: Num, start_idx: int, end_idx: int):
+    def __init__(self, cumsum: Num, start_idx: int):
         self.cumsum = cumsum
-        self.end_idx = end_idx
         self.start_idx = start_idx
 
 class OrderError(Exception):
@@ -34,14 +33,14 @@ class Cumsum:
         self.hash = {}
         self.data = data
         self.window = window
-        self.bootstrap(data)
+        self._bootstrap(data)
 
-    def bootstrap(self, data: List[List[Num]]):
+    def _bootstrap(self, data: List[List[Num]]):
         i = 0
         last_key = ''
         if len(self.hash) == 0:
             dt, val = data[0]
-            self.hash[dt] = Hash(val,0,0)
+            self.hash[dt] = Hash(val,0)
             last_key = dt
             i += 1
         while i < len(data):
@@ -61,14 +60,14 @@ class Cumsum:
             while dt - self.data[start_idx][0] > self.window:
                 cumsum -= self.data[start_idx][1]
                 start_idx += 1
-            self.hash[dt] = Hash(cumsum, start_idx, i)
+            self.hash[dt] = Hash(cumsum, start_idx)
             last_key = dt
             i += 1
         return self.hash
 
     def add_data(self, arr: List[List[Num]]):
         self.data += arr
-        self.bootstrap(arr)
+        self._bootstrap(arr)
 
     def __getitem__(self, dt: Num):
         if dt not in self.hash.keys():
