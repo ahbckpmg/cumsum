@@ -15,5 +15,6 @@ Calculates the cumulative sum for a [datetime, size] array
                 rows.append([dt, float(val)])
 
 
-    cs = Cumsum(rows,100000)
+    # cum sum over 24 hours
+    cs = Cumsum(rows,86400)
     cs[946910000]
